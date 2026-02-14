@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>MAHAT-AI 🔥</title>
+<style>
+  /* --- 1. GLOBAL & BACKGROUND --- */
+  html, body { 
+    margin: 0; padding: 0; 
+    height: 100%; width: 100%; 
+    overflow: hidden; 
+    background: #020205; 
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  /* Background Grid Animation */
+  .bg-animation {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: 
+      linear-gradient(transparent 95%, rgba(0, 255, 200, 0.1) 50%),
+      linear-gradient(90deg, transparent 95%, rgba(100, 0, 255, 0.1) 50%);
+    background-size: 30px 30px;
+    z-index: 0;
+    animation: moveGrid 15s linear infinite;
+  }
+  @keyframes moveGrid {
+    0% { background-position: 0 0; }
+    100% { background-position: 30px 30px; }
+  }
+
+  /* --- 2. GAME BOX (IFRAME) WITH LIGHTING --- */
+  .iframe-box {
+    width: 100%; 
+    max-width: 450px; /* Mobile View Width */
+    height: 98%;      
+    position: relative;
+    z-index: 5;
+    background: #000;
+    border-radius: 15px;
+    overflow: hidden;
+    /* The Lighting Animation around the Game Box */
+    border: 3px solid #00ffff;
+    box-shadow: 0 0 20px #00ffff, inset 0 0 20px #00ffff;
+    animation: boxPulse 2s infinite alternate;
+  }
+
+  @keyframes boxPulse {
+    0% { box-shadow: 0 0 15px #00ffff, 0 0 5px #0088ff; border-color: #00ffff; }
+    100% { box-shadow: 0 0 40px #00ffff, 0 0 20px #0088ff; border-color: #fff; }
+  }
+
+  iframe { width: 100%; height: 100%; border: none; display: block; }
+
+  /* --- 3. DRAGGABLE SMALL POPUP TOOL --- */
+  .box-container {
+    position: fixed; 
+    top: 80px; left: 30px; 
+    width: 160px; /* Smaller Width */
+    height: auto;
+    z-index: 9999;
+    cursor: grab;
+    touch-action: none;
+    user-select: none;
+  }
+
+  /* Rotating RGB Glow for Popup */
+  .box-container::before {
+    content: '';
+    position: absolute;
+    top: -3px; left: -3px; right: -3px; bottom: -3px;
+    background: linear-gradient(45deg, #ff0000, #ff00de, #0011ff, #00eeff, #00ff22, #ffee00);
+    background-size: 400%;
+    border-radius: 25px;
+    z-index: -1;
+    animation: glowing 8s linear infinite;
+    opacity: 0.9;
+    filter: blur(6px);
+  }
+  @keyframes glowing {
+    0% { background-position: 0 0; }
+    50% { background-position: 400% 0; }
+    100% { background-position: 0 0; }
+  }
+
+  .box {
+    background: rgba(10, 10, 20, 0.95);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 25px;
+    color: #fff;
+    text-align: center;
+    padding: 12px 5px; /* Compact Padding */
+    box-shadow: inset 0 0 15px rgba(0,0,0,0.8);
+    position: relative;
+  }
+
+  /* Profile Pic - Smaller */
+  .profile-pic {
+    width: 45px; height: 45px;
+    border-radius: 50%;
+    border: 2px solid #00ffff;
+    box-shadow: 0 0 8px #00ffff;
+    margin-bottom: 5px;
+    pointer-events: none;
+  }
+
+  /* Title - Smaller */
+  .title {
+    font-size: 11px; font-weight: 800;
+    background: linear-gradient(to right, #00ffff, #ff00ff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 8px;
+    letter-spacing: 0.5px;
+    pointer-events: none;
+  }
+
+  /* Inputs & Buttons - Compact */
+  #loginPart input {
+    width: 80%; padding: 5px;
+    background: #000; border: 1px solid #00ffff;
+    border-radius: 15px; color: #fff;
+    font-size: 11px; text-align: center;
+    margin-bottom: 5px; outline: none;
+  }
+
+  button, .btn-telegram {
+    width: 85%; padding: 5px 0;
+    border-radius: 15px; border: none;
+    font-size: 10px; font-weight: bold;
+    cursor: pointer; display: inline-block;
+    text-decoration: none; margin-bottom: 4px;
+  }
+
+  .btn-login { background: linear-gradient(90deg, #00ffff, #0066ff); color: #000; }
+  .btn-telegram { background: linear-gradient(90deg, #ff0055, #ff4400); color: #fff; }
+
+  #wrong { color: #ff3333; font-size: 9px; display:none; font-weight: bold; margin-top:2px; }
+  .dev-id { font-size: 8px; color: #777; margin-top: 5px; pointer-events: none; }
+
+  /* Signal Text - Compact */
+  .signal-box {
+    background: rgba(255,255,255,0.05);
+    border-radius: 15px; padding: 5px;
+    border: 1px solid rgba(255,255,255,0.1);
+  }
+  .signal { font-size: 18px; font-weight: 900; color: #fff; margin: 3px 0; text-shadow: 0 0 5px #00ffff;}
+  .countdown { font-size: 14px; color: yellow; font-weight: bold; }
+
+</style>
+</head>
+<body>
+
+<!-- Background Animation -->
+<div class="bg-animation"></div>
+
+<!-- Game Box (With Lighting) -->
+<div class="iframe-box">
+  <iframe src="https://dkwin9.com/#/register?invitationCode=452231756385"></iframe>
+</div>
+
+<!-- Draggable Popup Tool (Smaller & Draggable) -->
+<div class="box-container" id="signalBox">
+  <div class="box">
+    
+    <img src="https://image2url.com/r2/default/images/1770656634381-26df7411-157e-4cbf-b3c5-28bc96ad3a12.jpg" class="profile-pic" alt="Logo">
+    <div class="title">H4X MAHAT XD 🔥</div>
+
+    <!-- Login Part -->
+    <div id="loginPart">
+      <input type="text" id="passInput" placeholder="Password">
+      <br>
+      <button class="btn-login" onclick="attemptLogin()">LOGIN</button>
+      <a href="https://t.me/h4xownar" target="_blank" class="btn-telegram">Contact Id 🔥</a>
+      
+      <div id="wrong">WRONG PASS!</div>
+      <div class="dev-id">ID: <span id="myDevId">...</span></div>
+    </div>
+
+    <!-- Signal Part -->
+    <div id="signalPart" style="display:none;">
+      <div id="currentTime" style="font-size:9px; color:#aaa; margin-bottom:2px;">--:--</div>
+      
+      <div class="signal-box">
+        <div style="font-size:8px; color:#ccc;">RESULT</div>
+        <div class="signal" id="predicted">WAIT</div>
+        <div class="countdown"><span id="countdown">30</span>s</div>
+      </div>
+      
+      <div class="dev-id" style="color:#00ff00; margin-top:5px;">ACTIVE</div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  // --- 1. ID SETUP ---
+  let deviceId = localStorage.getItem("falcon_lite_id");
+  if (!deviceId) {
+    deviceId = "F-" + Math.floor(Math.random() * 9999); 
+    localStorage.setItem("falcon_lite_id", deviceId);
+  }
+  document.getElementById("myDevId").innerText = deviceId;
+
+  // --- 2. LOGIN LOGIC ---
+  const correctPassword = "MAHAT-XD"; 
+
+  function attemptLogin() {
+    let inputPass = document.getElementById("passInput").value;
+    if(inputPass === correctPassword) {
+      document.getElementById("loginPart").style.display = "none";
+      document.getElementById("signalPart").style.display = "block";
+      startSignal();
+    } else {
+      let w = document.getElementById("wrong");
+      w.style.display = "block";
+      setTimeout(() => w.style.display = "none", 1500);
+    }
+  }
+
+  // --- 3. DRAG LOGIC (Works on Login & Signal) ---
+  const box = document.getElementById("signalBox");
+  let isDragging = false, offsetX, offsetY;
+
+  // Prevent drag only when clicking Input/Button/Link
+  const ignoreDrag = (e) => ['INPUT', 'BUTTON', 'A'].includes(e.target.tagName);
+
+  // Touch
+  box.addEventListener('touchstart', (e) => {
+    if(ignoreDrag(e)) return;
+    isDragging = true;
+    let t = e.touches[0];
+    offsetX = t.clientX - box.getBoundingClientRect().left;
+    offsetY = t.clientY - box.getBoundingClientRect().top;
+  }, {passive:false});
+
+  document.addEventListener('touchmove', (e) => {
+    if (!isDragging) return;
+    let t = e.touches[0];
+    e.preventDefault(); 
+    movePopup(t.clientX, t.clientY);
+  }, {passive:false});
+
+  document.addEventListener('touchend', () => isDragging = false);
+
+  // Mouse
+  box.addEventListener('mousedown', (e) => {
+    if(ignoreDrag(e)) return;
+    isDragging = true;
+    offsetX = e.clientX - box.getBoundingClientRect().left;
+    offsetY = e.clientY - box.getBoundingClientRect().top;
+    box.style.cursor = 'grabbing';
+  });
+
+  document.addEventListener('mousemove', (e) => {
+    if (!isDragging) return;
+    e.preventDefault();
+    movePopup(e.clientX, e.clientY);
+  });
+
+  document.addEventListener('mouseup', () => { isDragging = false; box.style.cursor = 'grab'; });
+
+  function movePopup(clientX, clientY) {
+    let x = clientX - offsetX;
+    let y = clientY - offsetY;
+    
+    // Bounds Check
+    if(x < 0) x = 0;
+    if(y < 0) y = 0;
+    if(x + box.offsetWidth > window.innerWidth) x = window.innerWidth - box.offsetWidth;
+    if(y + box.offsetHeight > window.innerHeight) y = window.innerHeight - box.offsetHeight;
+    
+    box.style.left = x + 'px';
+    box.style.top = y + 'px';
+  }
+
+  // --- 4. SIGNAL LOGIC ---
+  let currentInterval = -1;
+
+  function startSignal() { 
+    requestAnimationFrame(updateLoop); 
+  }
+
+  function updateLoop() {
+    let now = new Date();
+    let msTotal = now.getTime();
+    let intervalId = Math.floor(msTotal / 30000); 
+    
+    if(intervalId !== currentInterval) { 
+      currentInterval = intervalId; 
+      generateSignal(); 
+    }
+    
+    let countdown = 30 - ((msTotal % 30000) / 1000);
+    let countEl = document.getElementById("countdown");
+    countEl.innerHTML = Math.ceil(countdown);
+    countEl.style.color = (Math.ceil(countdown) <= 5) ? "#ff3333" : "yellow";
+    
+    document.getElementById("currentTime").innerHTML = now.toLocaleTimeString();
+    requestAnimationFrame(updateLoop);
+  }
+
+  function generateSignal() {
+    let list = [
+       "BIG 6,8", "SMALL 0,2", "SMALL 1,3", "BIG 7,9", 
+       "BIG 5,8", "BIG 9,5", "SMALL 4,2", "SMALL 3,0"
+    ];
+    let random = list[Math.floor(Math.random() * list.length)];
+    
+    let signalEl = document.getElementById("predicted");
+    signalEl.style.opacity = 0;
+    setTimeout(() => {
+        signalEl.innerHTML = random;
+        signalEl.style.color = random.includes("BIG") ? "#00ff00" : "#00ffff";
+        signalEl.style.opacity = 1;
+    }, 300);
+  }
+</script>
+</body>
+</html>
+
